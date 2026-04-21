@@ -80,7 +80,7 @@ export default function PersonnelChangesPage() {
           { label: 'Rejected',       count: counts.rejected, icon: AlertCircle,  color: 'text-red-600',     bg: 'bg-red-50 border-red-200' },
         ].map(({ label, count, icon: Icon, color, bg }) => (
           <div key={label} className={`flex items-center gap-3 rounded-lg border px-4 py-3 ${bg}`}>
-            <Icon className={`w-5 h-5 flex-shrink-0 ${color}`} />
+            <Icon className={`w-5 h-5 shrink-0 ${color}`} />
             <div>
               <p className="text-xl font-bold text-foreground">{count}</p>
               <p className="text-xs text-muted-foreground">{label}</p>
@@ -145,8 +145,8 @@ export default function PersonnelChangesPage() {
                       {row.type}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground max-w-[140px] truncate" title={row.fromVal}>{row.fromVal}</td>
-                  <td className="px-3 py-2 text-foreground font-medium max-w-[140px] truncate" title={row.toVal}>{row.toVal}</td>
+                  <td className="px-3 py-2 text-muted-foreground max-w-35 truncate" title={row.fromVal}>{row.fromVal}</td>
+                  <td className="px-3 py-2 text-foreground font-medium max-w-35 truncate" title={row.toVal}>{row.toVal}</td>
                   <td className="px-3 py-2 tabular-nums text-muted-foreground">{row.effectiveDate}</td>
                   <td className="px-3 py-2 text-muted-foreground">{row.requestedBy}</td>
                   <td className="px-3 py-2"><StatusBadge status={row.status} /></td>

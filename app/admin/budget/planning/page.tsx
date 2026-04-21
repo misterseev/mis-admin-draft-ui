@@ -1,86 +1,116 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Eye, Edit, Send } from 'lucide-react'
+import { Plus, MoreHorizontal, Send, Edit, ChevronRight } from 'lucide-react'
 import { AppShell } from '@/components/mis/AppShell'
-import { PageHeader } from '@/components/mis/PageHeader'
 import { StatusBadge } from '@/components/mis/StatusBadge'
-import { WorkflowStepper } from '@/components/mis/WorkflowStepper'
-import { Button } from '@/components/ui/button'
+import { useBudgetStore, fmtM, BudgetPlan, PlanStatus } from '@/lib/stores/budgetStore'
 
-const PLANS = [
-  { ref: 'BPLAN-2027-001', name: 'FY 2027 Personnel Budget Plan',     dept: 'HR',             requestedBy: 'Khamthavy V.', submittedDate: '20/04/2026', amount: 'LAK 15,600M', status: 'Draft'    },
-  { ref: 'BPLAN-2027-002', name: 'FY 2027 Medical Supplies Plan',     dept: 'Pharmacy',       requestedBy: 'Phonsa L.',    submittedDate: '19/04/2026', amount: 'LAK 1,950M',  status: 'Pending'  },
-  { ref: 'BPLAN-2027-003', name: 'FY 2027 IT Infrastructure Plan',    dept: 'IT',             requestedBy: 'Ketsana P.',   submittedDate: '18/04/2026', amount: 'LAK 420M',    status: 'Pending'  },
-  { ref: 'BPLAN-2027-004', name: 'FY 2027 Training Plan',             dept: 'HR',             requestedBy: 'Noy S.',       submittedDate: '17/04/2026', amount: 'LAK 300M',    status: 'Approved' },
-  { ref: 'BPLAN-2027-005', name: 'FY 2027 Facility Maintenance Plan', dept: 'Maintenance',    requestedBy: 'Bounmy K.',    submittedDate: '15/04/2026', amount: 'LAK 680M',    status: 'Approved' },
-  { ref: 'BPLAN-2027-006', name: 'FY 2027 Lab Reagents Plan',         dept: 'Lab',            requestedBy: 'Khamphan V.',  submittedDate: '14/04/2026', amount: 'LAK 720M',    status: 'Rejected' },
+const COLUMNS: { status: PlanStatus; label: string; color: string; bg: string }[] = [
+  { status: 'Draft',    label: 'Draft',          color: 'text-slate-600',   bg: 'bg-slate-100'   },
+  { status: 'Pending',  label: 'Under Review',   color: 'text-amber-700',   bg: 'bg-amber-50'    },
+  { status: 'Approved', label: 'Approved',        color: 'text-emerald-700', bg: 'bg-emerald-50'  },
+  { status: 'Rejected', label: 'Rejected',        color: 'text-red-700',     bg: 'bg-red-50'      },
 ]
 
-const WORKFLOW_STEPS = ['Dept. Request', 'Finance Review', 'Director Review', 'MOH Submission', 'Approved']
-
-export default function BudgetPlanningPage() {
+function PlanCard({ plan }: { plan: BudgetPlan }) {
+  const approvedCount = plan.approvals.filter(a => a.status === 'Approved').length
+  const totalApprovers = plan.approvals.length
   return (
-    <AppShell breadcrumbs={[{ label: 'Budget', href: '/admin/budget' }, { label: 'Planning' }]}>
-      <PageHeader
-        title="Budget Planning"
-        titleLao="ການວາງແຜນງົບປະມານ"
-        description="Submit and manage annual department budget plans · BGT-002"
-        primaryAction={{ label: '+ New Budget Plan', icon: <Plus className="w-3.5 h-3.5" /> }}
-      />
-
-      <div className="mb-4">
-        <WorkflowStepper steps={WORKFLOW_STEPS} currentStep={1} />
+    <div className="bg-card border border-border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <p className="text-xs font-semibold leading-snug">{plan.name}</p>
+        <button className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-muted transition-opacity">
+          <MoreHorizontal className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
       </div>
-
-      <div className="grid grid-cols-4 gap-3 mb-4">
-        {[
-          { label: 'Draft Plans',     value: PLANS.filter(p => p.status === 'Draft').length,    color: 'text-muted-foreground' },
-          { label: 'Under Review',    value: PLANS.filter(p => p.status === 'Pending').length,  color: 'text-amber-600' },
-          { label: 'Approved',        value: PLANS.filter(p => p.status === 'Approved').length, color: 'text-emerald-600' },
-          { label: 'Total Requested', value: 'LAK 19,670M',                                     color: 'text-foreground' },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-card border border-border rounded-lg px-4 py-3">
-            <p className={`text-xl font-bold ${color}`}>{value}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+      <p className="text-[10px] text-muted-foreground mb-3 line-clamp-2">{plan.justification}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[10px] text-muted-foreground">{plan.dept}</p>
+          <p className="text-xs font-bold tabular-nums text-foreground">{fmtM(plan.amount)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] text-muted-foreground">Approvals</p>
+          <p className="text-[10px] font-medium">{approvedCount}/{totalApprovers}</p>
+        </div>
+      </div>
+      {/* Approval mini dots */}
+      <div className="flex gap-1 mt-2.5 pt-2.5 border-t border-border">
+        {plan.approvals.map((a, i) => (
+          <div key={i} className="flex items-center gap-1">
+            {i > 0 && <ChevronRight className="w-2.5 h-2.5 text-muted-foreground/40" />}
+            <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold ${
+              a.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
+              a.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+              'bg-muted text-muted-foreground'
+            }`}>
+              {a.name.split(' ')[0][0]}{a.name.split(' ')[1]?.[0] ?? ''}
+            </div>
           </div>
         ))}
+        <span className="ml-auto text-[9px] text-muted-foreground font-mono">{plan.ref.split('-').slice(-1)[0]}</span>
+      </div>
+    </div>
+  )
+}
+
+export default function BudgetPlanningPage() {
+  const { plans } = useBudgetStore()
+
+  const totalRequested = plans.reduce((s, p) => s + p.amount, 0)
+  const approvedAmount = plans.filter(p => p.status === 'Approved').reduce((s, p) => s + p.amount, 0)
+
+  return (
+    <AppShell breadcrumbs={[{ label: 'Budget', href: '/admin/budget' }, { label: 'Planning' }]}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-lg font-bold">Budget Planning</h1>
+          <p className="text-xs text-muted-foreground">FY 2027 department budget requests · BGT-002</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="text-right mr-2">
+            <p className="text-[10px] text-muted-foreground uppercase">Total Requested</p>
+            <p className="text-sm font-bold tabular-nums">{fmtM(totalRequested)}</p>
+          </div>
+          <div className="text-right mr-3 pl-3 border-l border-border">
+            <p className="text-[10px] text-muted-foreground uppercase">Approved</p>
+            <p className="text-sm font-bold tabular-nums text-emerald-600">{fmtM(approvedAmount)}</p>
+          </div>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
+            <Plus className="w-3.5 h-3.5" />New Budget Plan
+          </button>
+        </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border bg-muted/30">
-              {['Reference','Plan Name','Department','Requested By','Submitted','Requested Amount','Status','Actions'].map(h => (
-                <th key={h} className="text-left px-3 py-2 font-medium text-muted-foreground whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {PLANS.map(p => (
-              <tr key={p.ref} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{p.ref}</td>
-                <td className="px-3 py-2 font-medium">{p.name}</td>
-                <td className="px-3 py-2 text-muted-foreground">{p.dept}</td>
-                <td className="px-3 py-2 text-muted-foreground">{p.requestedBy}</td>
-                <td className="px-3 py-2 tabular-nums text-muted-foreground">{p.submittedDate}</td>
-                <td className="px-3 py-2 tabular-nums font-semibold text-foreground">{p.amount}</td>
-                <td className="px-3 py-2"><StatusBadge status={p.status} /></td>
-                <td className="px-3 py-2">
-                  <div className="flex items-center gap-1">
-                    <button className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"><Eye className="w-3.5 h-3.5" /></button>
-                    {p.status === 'Draft' && (
-                      <>
-                        <button className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"><Edit className="w-3.5 h-3.5" /></button>
-                        <button className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"><Send className="w-3.5 h-3.5" /></button>
-                      </>
-                    )}
+      {/* Kanban board */}
+      <div className="grid grid-cols-4 gap-3 min-h-96">
+        {COLUMNS.map(col => {
+          const colPlans = plans.filter(p => p.status === col.status)
+          const colTotal = colPlans.reduce((s, p) => s + p.amount, 0)
+          return (
+            <div key={col.status} className="flex flex-col gap-2">
+              {/* Column header */}
+              <div className={`flex items-center justify-between px-3 py-2 rounded-lg ${col.bg}`}>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-semibold ${col.color}`}>{col.label}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/60 ${col.color}`}>{colPlans.length}</span>
+                </div>
+                <span className={`text-[10px] font-medium tabular-nums ${col.color}`}>{fmtM(colTotal)}</span>
+              </div>
+
+              {/* Cards */}
+              <div className="flex flex-col gap-2 flex-1">
+                {colPlans.map(p => <PlanCard key={p.ref} plan={p} />)}
+                {colPlans.length === 0 && (
+                  <div className="flex items-center justify-center h-20 rounded-lg border border-dashed border-border text-xs text-muted-foreground">
+                    No plans
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+            </div>
+          )
+        })}
       </div>
     </AppShell>
   )

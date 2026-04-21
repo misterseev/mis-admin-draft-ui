@@ -61,7 +61,7 @@ export default function EmployeeDetailClient({ code }: { code: string }) {
 
       {/* Summary card */}
       <div className="bg-card border border-border rounded-lg p-4 mb-4 flex items-start gap-4">
-        <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
           <span className="text-lg font-bold text-primary">SP</span>
         </div>
         <div className="flex-1 min-w-0">
@@ -81,7 +81,7 @@ export default function EmployeeDetailClient({ code }: { code: string }) {
             ))}
           </div>
         </div>
-        <div className="flex flex-col gap-1.5 flex-shrink-0">
+        <div className="flex flex-col gap-1.5 shrink-0">
           <Button size="sm" variant="outline" className="h-7 text-xs gap-1"><Edit className="w-3 h-3" />
           <Link href="/admin/hr/employees/add">Edit</Link>
           </Button>

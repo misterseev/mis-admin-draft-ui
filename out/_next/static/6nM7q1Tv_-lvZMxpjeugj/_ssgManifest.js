@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Fadmin\u002Fhr\u002Femployees\u002F[code]","\u002Fadmin\u002Finventory\u002Fpurchasing\u002F[ref]","\u002Fadmin\u002Finventory\u002Freceiving\u002F[ref]"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()

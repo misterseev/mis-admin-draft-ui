@@ -166,7 +166,7 @@ export default function LeavePage() {
                     <td className="px-3 py-2 tabular-nums text-muted-foreground">{row.fromDate}</td>
                     <td className="px-3 py-2 tabular-nums text-muted-foreground">{row.toDate}</td>
                     <td className="px-3 py-2 tabular-nums font-semibold text-foreground">{row.days}</td>
-                    <td className="px-3 py-2 text-muted-foreground max-w-[140px] truncate">{row.reason}</td>
+                    <td className="px-3 py-2 text-muted-foreground max-w-35 truncate">{row.reason}</td>
                     <td className="px-3 py-2"><StatusBadge status={row.status} /></td>
                     <td className="px-3 py-2">
                       <button className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"><Eye className="w-3.5 h-3.5" /></button>

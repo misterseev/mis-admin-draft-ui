@@ -65,7 +65,7 @@ function Section({ title, titleLao, description, icon: Icon, children }: Section
     return (
         <section className="bg-card border border-border rounded-lg overflow-hidden">
             <header className="flex items-start gap-3 px-4 py-3 border-b border-border bg-muted/30">
-                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
                     <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -177,7 +177,7 @@ export default function EmployeeForm() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
                         {/* Photo upload */}
                         <div className="md:col-span-3 flex items-center gap-4 pb-3 mb-1 border-b border-border/60">
-                            <div className="w-20 h-20 rounded-lg bg-muted border-2 border-dashed border-border flex items-center justify-center flex-shrink-0">
+                            <div className="w-20 h-20 rounded-lg bg-muted border-2 border-dashed border-border flex items-center justify-center shrink-0">
                                 <User className="w-8 h-8 text-muted-foreground/40" />
                             </div>
                             <div>

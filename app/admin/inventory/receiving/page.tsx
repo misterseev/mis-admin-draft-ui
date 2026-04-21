@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Search, Eye, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Plus, Search, CheckCircle2, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
 import { AppShell } from '@/components/mis/AppShell'
 import { PageHeader } from '@/components/mis/PageHeader'
 import { StatusBadge } from '@/components/mis/StatusBadge'
@@ -50,7 +51,7 @@ export default function ReceivingPage() {
         title="Goods Receiving"
         titleLao="ການຮັບສິນຄ້າ"
         description="Record and quality-check goods received against purchase orders · INV-003"
-        primaryAction={{ label: '+ New Receipt', icon: <Plus className="w-3.5 h-3.5" /> }}
+        primaryAction={{ label: '+ New Receipt', icon: <Plus className="w-3.5 h-3.5" />, href: '/admin/inventory/receiving/new' }}
       />
 
       <div className="grid grid-cols-4 gap-3 mb-4">
@@ -87,7 +88,11 @@ export default function ReceivingPage() {
           <tbody>
             {filtered.map(row => (
               <tr key={row.ref} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
-                <td className="px-3 py-2 font-mono text-[10px] text-primary">{row.ref}</td>
+                <td className="px-3 py-2">
+                  <Link href={`/admin/inventory/receiving/${encodeURIComponent(row.ref)}`} className="font-mono text-[10px] text-primary hover:underline">
+                    {row.ref}
+                  </Link>
+                </td>
                 <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{row.poRef}</td>
                 <td className="px-3 py-2 font-medium text-foreground">{row.supplier}</td>
                 <td className="px-3 py-2 tabular-nums text-center">{row.items}</td>
@@ -104,7 +109,9 @@ export default function ReceivingPage() {
                 </td>
                 <td className="px-3 py-2"><StatusBadge status={row.status} /></td>
                 <td className="px-3 py-2">
-                  <button className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary"><Eye className="w-3.5 h-3.5" /></button>
+                  <Link href={`/admin/inventory/receiving/${encodeURIComponent(row.ref)}`} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-primary inline-flex">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </Link>
                 </td>
               </tr>
             ))}

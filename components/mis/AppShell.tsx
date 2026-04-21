@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -11,6 +11,7 @@ import {
   ShoppingCart, Warehouse, TruckIcon, BarChart2, Landmark, BookMarked,
   FileCheck, Shield, Activity,
 } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -123,8 +124,17 @@ interface AppShellProps {
 export function AppShell({ children, breadcrumbs = [] }: AppShellProps) {
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  // ຫາ group ທີ່ມີ route ກົງກັບ pathname ປັດຈຸບັນ
+  const findActiveGroup = (path: string | null) =>
+    NAV_GROUPS.find(g => g.items.some(i => path?.startsWith(i.href)))?.group ?? null
   // ເກັບຊື່ group ດຽວທີ່ເປີດຢູ່ (ຫຼື null ຖ້າບໍ່ມີ group ໃດເປີດ)
-  const [expandedGroup, setExpandedGroup] = useState<string | null>('Human Resources')
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(() => findActiveGroup(pathname))
+
+  // ເມື່ອ pathname ປ່ຽນໄປຢູ່ group ອື່ນ → ເປີດ group ນັ້ນໂດຍອັດຕະໂນມັດ
+  useEffect(() => {
+    const active = findActiveGroup(pathname)
+    if (active) setExpandedGroup(active)
+  }, [pathname])
   const [hospital, setHospital] = useState(0)
   const [lang, setLang] = useState<'en' | 'lo'>('en')
 
@@ -137,13 +147,13 @@ export function AppShell({ children, breadcrumbs = [] }: AppShellProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200 flex-shrink-0',
+          'flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200 shrink-0',
           sidebarOpen ? 'w-64' : 'w-14'
         )}
       >
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 py-3 border-b border-sidebar-border">
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center flex-shrink-0">
+          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shrink-0">
             <Activity className="w-4 h-4 text-white" />
           </div>
           {sidebarOpen && (
@@ -156,7 +166,7 @@ export function AppShell({ children, breadcrumbs = [] }: AppShellProps) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto pl-1 pr-4 py-2 scrollbar-thin">
+        <nav className="flex-s1 overflow-y-auto pl-1 pr-4 py-2 scrollbar-thin">
           {NAV_GROUPS.map(group => {
             const GroupIcon = group.icon
             const expanded = expandedGroup === group.group
@@ -170,62 +180,85 @@ export function AppShell({ children, breadcrumbs = [] }: AppShellProps) {
                     active && 'text-sidebar-primary'
                   )}
                 >
-                  <GroupIcon className={cn('w-4 h-4 flex-shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/60')} />
+                  <GroupIcon className={cn('w-4 h-4 shrink-0', active ? 'text-sidebar-primary' : 'text-sidebar-foreground/60')} />
                   {sidebarOpen && (
                     <>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-sidebar-foreground/90 truncate">{group.group}</p>
                       </div>
-                      {expanded ? (
-                        <ChevronDown className="w-3 h-3 text-sidebar-foreground/40" />
-                      ) : (
+                      <motion.span
+                        animate={{ rotate: expanded ? 90 : 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="flex items-center"
+                      >
                         <ChevronRight className="w-3 h-3 text-sidebar-foreground/40" />
-                      )}
+                      </motion.span>
                     </>
                   )}
                 </button>
-                {sidebarOpen && expanded && (
-                  <div className="ml-3 border-l border-sidebar-border pl-2 mb-1">
-                    {group.items.map(item => {
-                      const ItemIcon = item.icon
-                      const isActive = pathname === item.href || pathname?.startsWith(item.href + '/')
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          className={cn(
-                            'flex items-center gap-2 p-2 rounded-md text-xs transition-colors my-0.5',
-                            isActive
-                              ? 'bg-sidebar-primary text-sidebar-primary-foreground'
-                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                          )}
-                        >
-                          {ItemIcon && <ItemIcon className="w-3 h-3 flex-shrink-0" />}
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                      )
-                    })}
-                  </div>
-                )}
+                <AnimatePresence initial={false}>
+                  {sidebarOpen && expanded && (
+                    <motion.div
+                      key="submenu"
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="ml-3 border-l border-sidebar-border pl-2 mb-1">
+                        {group.items.map((item, idx) => {
+                          const ItemIcon = item.icon
+                          // ໃຊ້ href ທີ່ specific (ຍາວ) ທີ່ສຸດທີ່ match pathname ເພື່ອປ້ອງກັນ prefix ສັ້ນ active ຜິດ
+                          const bestHref = group.items
+                            .filter(i => pathname === i.href || pathname?.startsWith(i.href + '/'))
+                            .sort((a, b) => b.href.length - a.href.length)[0]?.href ?? null
+                          const isActive = item.href === bestHref
+                          return (
+                            <motion.div
+                              key={item.href}
+                              initial={{ opacity: 0, x: -8 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.18, delay: 0.04 + idx * 0.025, ease: 'easeOut' }}
+                            >
+                              <Link
+                                href={item.href}
+                                className={cn(
+                                  'flex items-center gap-2 p-2 rounded-md text-xs transition-colors my-0.5',
+                                  isActive
+                                    ? 'bg-sidebar-primary text-sidebar-primary-foreground'
+                                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                                )}
+                              >
+                                {ItemIcon && <ItemIcon className="w-3 h-3 shrink-0" />}
+                                <span className="truncate">{item.label}</span>
+                              </Link>
+                            </motion.div>
+                          )
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )
           })}
         </nav>
 
         {/* Footer */}
-        <div className="px-3 py-2 border-t border-sidebar-border">
+        {/* <div className="fixed bottom-0 left-0 w-64 px-3 py-2 border-t border-sidebar-border">
           {sidebarOpen ? (
             <p className="text-[9px] text-sidebar-foreground/30 text-center">v1.0 · Powered by CWIT</p>
           ) : (
             <div className="w-2 h-2 rounded-full bg-emerald-500 mx-auto" title="Connected" />
           )}
-        </div>
+        </div> */}
       </aside>
 
       {/* Main */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="flex items-center gap-3 px-4 py-2 bg-card border-b border-border h-12 flex-shrink-0">
+        <header className="flex items-center gap-3 px-4 py-2 bg-card border-b border-border h-12 shrink-0">
           {/* Hospital selector */}
 
           <div className="flex-1" />

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, X, AlertTriangle, Package } from 'lucide-react'
+import { Search, X, AlertTriangle, Package, Plus } from 'lucide-react'
 import { AppShell } from '@/components/mis/AppShell'
 import { PageHeader } from '@/components/mis/PageHeader'
 import { Input } from '@/components/ui/input'
@@ -63,6 +63,7 @@ export default function StockPage() {
         title="Stock Management"
         titleLao="ການຈັດການສາງ"
         description="Real-time inventory levels, reorder alerts, and stock adjustments · INV-004"
+        primaryAction={{ label: 'Adjust Stock', icon: <Plus className="w-3.5 h-3.5" />, href: '/admin/inventory/stock/adjust' }}
       />
 
       <div className="grid grid-cols-4 gap-3 mb-4">

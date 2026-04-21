@@ -67,7 +67,7 @@ export default function InventoryDocumentsPage() {
                 <td className="px-3 py-2 font-mono text-[10px] text-muted-foreground">{doc.ref}</td>
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                    <FileText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="font-medium">{doc.name}</span>
                   </div>
                 </td>
